@@ -13,4 +13,4 @@ crons = ["* * * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "torn-abroad-stock-db"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "b7db235b-cdbb-4fcf-9a39-3dc0fda87817"
