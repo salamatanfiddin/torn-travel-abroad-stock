@@ -37,6 +37,26 @@ const TARGET_ITEMS = [
   "Smoke Grenade",
 ].map((name) => name.toLowerCase());
 
+// Converts an array of row objects into a CSV string.
+// Wraps any value containing a comma, quote, or newline in quotes and
+// escapes internal quotes by doubling them, per standard CSV rules.
+function toCsv(rows) {
+  if (!rows.length) return "";
+  const headers = Object.keys(rows[0]);
+  const escape = (val) => {
+    const str = String(val ?? "");
+    if (/[",\n]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+  const lines = [headers.join(",")];
+  for (const row of rows) {
+    lines.push(headers.map((h) => escape(row[h])).join(","));
+  }
+  return lines.join("\n");
+}
+
 async function pollAndStore(env) {
   const res = await fetch(YATA_EXPORT_URL, {
     headers: { "User-Agent": "torn-abroad-stock-logger (personal use)" },
@@ -125,11 +145,23 @@ export default {
       const { results } = await env.DB.prepare(query)
         .bind(...binds)
         .all();
+
+      const format = (url.searchParams.get("format") || "json").toLowerCase();
+      if (format === "csv") {
+        const csv = toCsv(results);
+        return new Response(csv, {
+          headers: {
+            "content-type": "text/csv; charset=utf-8",
+            "content-disposition": 'attachment; filename="stock_log.csv"',
+          },
+        });
+      }
+
       return Response.json(results);
     }
 
     return new Response(
-      "Torn abroad stock logger.\nGET /poll to trigger a manual check.\nGET /data?item=Insulin&limit=100 to view logged rows.",
+      "Torn abroad stock logger.\nGET /poll to trigger a manual check.\nGET /data?item=Insulin&limit=100&format=csv to view/download logged rows (format=json or csv, default json).",
       { headers: { "content-type": "text/plain" } }
     );
   },
