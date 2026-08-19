@@ -1,0 +1,16 @@
+name = "torn-abroad-stock"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Runs the worker once every minute.
+# YATA's cache only changes when a traveler actually reports new stock,
+# so this just checks frequently enough that we never miss an update by more than ~60s.
+[triggers]
+crons = ["* * * * *"]
+
+# D1 database binding — create the DB first (see README), then paste its
+# database_id below. The binding name "DB" is what src/index.js expects.
+[[d1_databases]]
+binding = "DB"
+database_name = "torn-abroad-stock-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
